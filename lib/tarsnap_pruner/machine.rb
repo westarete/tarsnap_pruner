@@ -1,3 +1,5 @@
+require 'tmpdir'
+
 module TarsnapPruner
 
   # An instance of this class represents one machine that's being backed up.

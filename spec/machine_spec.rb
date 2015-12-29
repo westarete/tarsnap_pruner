@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'fileutils'
 
 describe TarsnapPruner::Machine do
   let(:key_file) { File.join('spec', 'fixtures', 'keys', 'tarsnap-hostname1.example.com.key') }
