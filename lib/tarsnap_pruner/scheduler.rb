@@ -1,9 +1,5 @@
 module TarsnapPruner
 
-  # An instance of this class represents a single tarsnap backup.
-  #
-  # We expect the name of each archive to contain an iso8601 date that
-  # represents the date that the backup was taken.
   class Scheduler
 
     def initialize(archives, daily_boundary=182, weekly_boundary=730)
