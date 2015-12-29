@@ -1,7 +1,7 @@
 module TarsnapPruner
 
   # A class to encapsulate invoking the command-line tarsnap commands.
-  class TarsnapCommand
+  class Tarsnap
 
     def initialize(key_file)
       @key_file = key_file
