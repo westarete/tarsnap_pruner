@@ -239,4 +239,70 @@ describe TarsnapPruner::Scheduler do
     end
   end
 
+  context "given archives that have already been pruned" do
+    let(:archives) do
+      %w{
+        2015-10-31
+        2015-11-30
+        2015-12-01
+
+        2015-12-06
+        2015-12-13
+        2015-12-20
+        2015-12-21
+
+        2015-12-22
+        2015-12-23
+        2015-12-24
+        2015-12-25
+        2015-12-26
+        2015-12-27
+        2015-12-28
+        2015-12-29
+        2015-12-30
+        2015-12-31
+      }.map { |n| TarsnapPruner::Archive.new(n) }
+    end
+    it "sees nothing to prune" do
+      expect(scheduler.archives_to_prune).to be_empty
+    end
+  end
+
+  context "given archives with less than ideal backup coverage" do
+    let(:archives) do
+      %w{
+        2015-10-15
+        2015-11-20
+
+        2015-12-02
+        2015-12-10
+        2015-12-21
+
+        2015-12-22
+        2015-12-23
+        2015-12-24
+        2015-12-26
+        2015-12-27
+        2015-12-29
+        2015-12-31
+      }.map { |n| TarsnapPruner::Archive.new(n) }
+    end
+    it "doesn't prune any further" do
+      expect(scheduler.archives_to_prune).to be_empty
+    end
+  end
+
+  context "given archives in the future" do
+    let(:archives) do
+      %w{
+        2016-01-01
+        2016-01-02
+        2016-01-03
+      }.map { |n| TarsnapPruner::Archive.new(n) }
+    end
+    it "doesn't prune anything" do
+      expect(scheduler.archives_to_prune).to be_empty
+    end
+  end
+
 end
