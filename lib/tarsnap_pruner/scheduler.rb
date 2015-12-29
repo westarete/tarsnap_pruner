@@ -21,15 +21,15 @@ module TarsnapPruner
     end
 
     def dailies
-      []
+      knowns.select { |a| a.elapsed < @daily_boundary }
     end
 
     def weeklies
-      []
+      knowns.select { |a| a.elapsed >= @daily_boundary && a.elapsed < @weekly_boundary }
     end
 
     def monthlies
-      []
+      knowns.select { |a| a.elapsed >= @weekly_boundary }
     end
 
     def weeklies_to_keep
