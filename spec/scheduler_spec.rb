@@ -5,7 +5,7 @@ describe TarsnapPruner::Scheduler do
   # We freeze all of the Scheduler tests to a static date, so that we can
   # use concrete examples for our data, as opposed to having to do relative
   # calculations to the current time.
-  let(:today) { Date.new(2015,12,20) }
+  let(:today) { Date.new(2015,12,31) }
   around do |example|
     Timecop.freeze(today)
     example.run
@@ -14,8 +14,8 @@ describe TarsnapPruner::Scheduler do
 
   # Keep daily backups back to 14 days, weeklies back to 60 days, and
   # monthlies after that.
-  let(:daily_boundary) { 14 }
-  let(:weekly_boundary) { 60 }
+  let(:daily_boundary) { 10 }
+  let(:weekly_boundary) { 30 }
   let(:scheduler) { TarsnapPruner::Scheduler.new(archives, daily_boundary, weekly_boundary) }
 
   context "given an empty array of archives" do
@@ -82,9 +82,9 @@ describe TarsnapPruner::Scheduler do
   context "given archives that only span the daily period" do
     let(:archives) do
       %w{
-        hostname-2015-12-20
-        hostname-2015-12-19
-        hostname-2015-12-18
+        hostname-2015-12-30
+        hostname-2015-12-29
+        hostname-2015-12-28
       }.map { |n| TarsnapPruner::Archive.new(n) }
     end
     it "includes them in the knowns" do
@@ -113,7 +113,7 @@ describe TarsnapPruner::Scheduler do
 
   context "given daily archives that go back through all periods" do
     let(:archives) do
-      90.times.collect do |i|
+      90.downto(0).collect do |i|
         TarsnapPruner::Archive.new("hostname-#{today-i}")
       end
     end
@@ -124,13 +124,118 @@ describe TarsnapPruner::Scheduler do
       end
     end
     it "sets the dailies" do
-      expect(scheduler.dailies).to eq archives.first(daily_boundary)
+      expect(scheduler.dailies.map(&:date)).to eq (Date.new(2015,12,22)..Date.new(2015,12,31)).to_a
     end
     it "sets the weeklies" do
-      expect(scheduler.weeklies).to eq archives[daily_boundary...weekly_boundary]
+      expect(scheduler.weeklies.map(&:date)).to eq (Date.new(2015,12,2)..Date.new(2015,12,21)).to_a
     end
     it "sets the monthlies" do
-      expect(scheduler.monthlies).to eq archives[weekly_boundary..archives.length]
+      expect(scheduler.monthlies.map(&:date)).to eq (Date.new(2015,10,2)..Date.new(2015,12,1)).to_a
+    end
+    it "keeps the weeklies that fall on the last day of each week" do
+      expect(scheduler.weeklies_to_keep.map { |a| a.date.to_s }).to eq %w{
+        2015-12-06
+        2015-12-13
+        2015-12-20
+        2015-12-21
+      }
+    end
+    let(:expected_weeklies_to_prune) {%w{
+        2015-12-02
+        2015-12-03
+        2015-12-04
+        2015-12-05
+
+        2015-12-07
+        2015-12-08
+        2015-12-09
+        2015-12-10
+        2015-12-11
+        2015-12-12
+
+        2015-12-14
+        2015-12-15
+        2015-12-16
+        2015-12-17
+        2015-12-18
+        2015-12-19
+    }}
+    it "prunes the rest of archives that fall within the weeklies period" do
+      expect(scheduler.weeklies_to_prune.map { |a| a.date.to_s }).to eq expected_weeklies_to_prune
+    end
+    it "keeps the monthlies that fall on the last day of each month" do
+      expect(scheduler.monthlies_to_keep.map { |a| a.date.to_s }).to eq %w{
+        2015-10-31
+        2015-11-30
+        2015-12-01
+      }
+    end
+    let(:expected_monthlies_to_prune) {%w{
+        2015-10-02
+        2015-10-03
+        2015-10-04
+        2015-10-05
+        2015-10-06
+        2015-10-07
+        2015-10-08
+        2015-10-09
+        2015-10-10
+        2015-10-11
+        2015-10-12
+        2015-10-13
+        2015-10-14
+        2015-10-15
+        2015-10-16
+        2015-10-17
+        2015-10-18
+        2015-10-19
+        2015-10-20
+        2015-10-21
+        2015-10-22
+        2015-10-23
+        2015-10-24
+        2015-10-25
+        2015-10-26
+        2015-10-27
+        2015-10-28
+        2015-10-29
+        2015-10-30
+
+        2015-11-01
+        2015-11-02
+        2015-11-03
+        2015-11-04
+        2015-11-05
+        2015-11-06
+        2015-11-07
+        2015-11-08
+        2015-11-09
+        2015-11-10
+        2015-11-11
+        2015-11-12
+        2015-11-13
+        2015-11-14
+        2015-11-15
+        2015-11-16
+        2015-11-17
+        2015-11-18
+        2015-11-19
+        2015-11-20
+        2015-11-21
+        2015-11-22
+        2015-11-23
+        2015-11-24
+        2015-11-25
+        2015-11-26
+        2015-11-27
+        2015-11-28
+        2015-11-29
+    }}
+    it "prunes the rest of archives that fall within the monthlies period" do
+      expect(scheduler.monthlies_to_prune.map { |a| a.date.to_s }).to eq expected_monthlies_to_prune
+    end
+    it "returns the complete list of archives to prune" do
+      expect(scheduler.archives_to_prune.map { |a| a.date.to_s }).to eq(expected_monthlies_to_prune + expected_weeklies_to_prune)
     end
   end
 

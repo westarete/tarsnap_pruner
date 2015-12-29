@@ -33,23 +33,23 @@ module TarsnapPruner
     end
 
     def weeklies_to_keep
-      []
+      weeklies.group_by { |a| a.date.cweek }.values.map(&:last)
     end
 
     def weeklies_to_prune
-      []
+      weeklies - weeklies_to_keep
     end
 
     def monthlies_to_keep
-      []
+      monthlies.group_by { |a| a.date.month }.values.map(&:last)
     end
 
     def monthlies_to_prune
-      []
+      monthlies - monthlies_to_keep
     end
 
     def archives_to_prune
-      unknowns
+      unknowns + monthlies_to_prune + weeklies_to_prune
     end
 
   end
