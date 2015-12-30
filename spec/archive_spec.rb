@@ -31,6 +31,12 @@ describe TarsnapPruner::Archive do
     end
   end
 
+  describe '#to_s' do
+    it "returns the name" do
+      expect(archive.to_s).to eq 'The Name'
+    end
+  end
+
   describe '#elapsed' do
     context "when there is a date" do
       let(:name) { "hostname-2015-05-15" }

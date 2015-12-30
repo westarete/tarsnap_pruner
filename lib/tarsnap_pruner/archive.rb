@@ -17,6 +17,10 @@ module TarsnapPruner
 
     attr_reader :name
 
+    def to_s
+      name
+    end
+
     # Return a Ruby Date object for the backup's date, or nil if one could not
     # be discerned from the archive name.
     def date
