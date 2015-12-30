@@ -1,3 +1,40 @@
 #!/usr/bin/env ruby
 
+# Prune old backups from tarsnap, in order to save on storage costs.
+
 require "tarsnap_pruner"
+
+TarsnapPruner.configure(ARGV.first)
+unless ENV['KEY_DIRECTORY']
+  puts "Supply a config file or define ENV['KEY_DIRECTORY']"
+  exit 1
+end
+
+TarsnapPruner::Machine.all.each do |machine|
+  puts
+  puts "===== #{machine.hostname} ====="
+
+  scheduler = TarsnapPruner::Scheduler.new(machine.archives)
+
+  puts "Daily backups to keep:"
+  puts scheduler.dailies
+
+  puts "Weekly backups to keep:"
+  puts scheduler.weeklies_to_keep
+
+  puts "Monthly backups to keep:"
+  puts scheduler.monthlies_to_keep
+
+  puts "----- 8< -----"
+
+  puts "Weekly backups to prune:"
+  puts scheduler.weeklies_to_prune
+
+  puts "Monthly backups to prune:"
+  puts scheduler.monthlies_to_prune
+
+  puts "Unknown backups to prune:"
+  puts scheduler.unknowns
+
+  machine.delete(scheduler.archives_to_prune)
+end
