@@ -29,7 +29,7 @@ module TarsnapPruner
     end
 
     def weeklies_to_keep
-      weeklies.group_by { |a| "#{a.date.year}-#{a.date.cweek}" }.values.map(&:last)
+      weeklies.group_by { |a| [a.date.year, a.date.cweek] }.values.map(&:last)
     end
 
     def weeklies_to_prune
