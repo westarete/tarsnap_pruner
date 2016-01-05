@@ -2,7 +2,7 @@ module TarsnapPruner
 
   class Scheduler
 
-    def initialize(archives, daily_boundary=182, weekly_boundary=730)
+    def initialize(archives, daily_boundary=90, weekly_boundary=365)
       @archives = archives.sort_by(&:date)
       @daily_boundary = daily_boundary
       @weekly_boundary = weekly_boundary
