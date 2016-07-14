@@ -37,7 +37,7 @@ module TarsnapPruner
     end
 
     def monthlies_to_keep
-      monthlies.group_by { |a| a.date.month }.values.map(&:last)
+      monthlies.group_by { |a| [a.date.year, a.date.month] }.values.map(&:last)
     end
 
     def monthlies_to_prune

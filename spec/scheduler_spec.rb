@@ -240,8 +240,8 @@ describe TarsnapPruner::Scheduler do
   end
 
   context "given actual backups from centre foundation" do
-    let(:daily_boundary) { 182 }
-    let(:weekly_boundary) { 730 }
+    let(:daily_boundary) { 90 }
+    let(:weekly_boundary) { 365 }
     let(:archives) do
       %w{
         centre-foundation-2015-07-01
@@ -512,12 +512,72 @@ describe TarsnapPruner::Scheduler do
       }.map { |name| TarsnapPruner::Archive.new(name) }
     end
 
-    it "prunes one redundant monthly" do
-      expect(scheduler.monthlies_to_prune.map { |a| a.date.to_s }).to eq %w{ 2013-12-15 }
+    it "keeps the latest backup from each month that's more than a year old" do
+      expect(scheduler.monthlies_to_keep.map { |a| a.date.to_s }.sort.reverse).to eq %w{
+        2014-12-28
+        2014-10-26
+        2014-09-28
+        2014-08-31
+        2014-07-27
+        2014-06-29
+        2014-05-25
+        2014-04-27
+        2014-03-30
+        2014-02-23
+        2014-01-26
+        2013-12-29
+        2013-11-15
+        2013-10-15
+        2013-09-15
+        2013-08-15
+        2013-07-15
+        2013-06-15
+        2013-05-15
+        2013-04-15
+        2013-03-15
+      }
     end
 
-    it "prunes the two newly expired weeklies" do
-      expect(scheduler.weeklies_to_prune.map { |a| a.date.to_s }).to eq %w{ 2015-06-30 2015-07-01 }
+    it "keeps the latest backup from each week that's more than 90 days old" do
+      expect(scheduler.weeklies_to_keep.map { |a| a.date.to_s }.sort.reverse).to eq %w{
+        2015-10-02
+        2015-09-27
+        2015-09-20
+        2015-09-13
+        2015-09-06
+        2015-08-30
+        2015-08-23
+        2015-08-16
+        2015-08-09
+        2015-08-02
+        2015-07-26
+        2015-07-19
+        2015-07-12
+        2015-07-05
+        2015-06-28
+        2015-06-21
+        2015-06-14
+        2015-06-07
+        2015-05-31
+        2015-05-24
+        2015-05-17
+        2015-05-10
+        2015-05-03
+        2015-04-26
+        2015-04-19
+        2015-04-05
+        2015-03-29
+        2015-03-22
+        2015-03-08
+        2015-03-01
+        2015-02-22
+        2015-02-08
+        2015-02-01
+        2015-01-25
+        2015-01-18
+        2015-01-11
+        2015-01-04
+      }
     end
 
   end
